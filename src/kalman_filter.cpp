@@ -63,6 +63,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   	float rho = sqrt(px*px+py*py);
     float phi = atan2(py,px);
   	float rho_dot;
+  	const float pi = 3.1415926
   	//normalize phi
   	if (phi>pi){
 		phi -=2*pi;  
@@ -81,15 +82,15 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     
   //map the predicted states x' from Cartesian coordinates to polar coordinates
   	VectorXd hx_ << rho, phi, rho_dot;
+  //EKF update
   	VectorXd y = z - hx_;
-  	MatrixXd Hj = CalculateJacobian(x_);
-  	MatrixXd Hjt = Hj_.transpose();
-    MatrixXd S = Hj * P_ * Hjt + R_;
+    MatrixXd Ht = H_.transpose();
+    MatrixXd S = H_ * P_ * Ht + R_;
     MatrixXd Si = S.inverse();
-    MatrixXd K = P_ * Hjt * Si;
+    MatrixXd K = P_ * Ht * Si;
   
   	x_ = x_ + K*y;
     long x_size = x_.size();
   	MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  	P_ = (I - K*Hj)*P_;
+  	P_ = (I - K*H)*P_;
 }
