@@ -1,5 +1,5 @@
 #include "kalman_filter.h"
-
+#include <iostream>
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -63,7 +63,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   	float rho = sqrt(px*px+py*py);
     float phi = atan2(py,px);
   	float rho_dot;
-  	const float pi = 3.1415926
+  	const float pi = 3.1415926;
   	//normalize phi
   	if (phi>pi){
 		phi -=2*pi;  
@@ -74,14 +74,15 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     }
   	//check if px*px+ py*py is close to 0
   	if (px*px+py*py < 0.0001){
-    	cout<< "px**2 + py**2 is too close to 0, no valid EKF update" << endl;
+    	std::cout<< "px**2 + py**2 is too close to 0, no valid EKF update" << std::endl;
       	rho_dot = (px*vx + py*vy)/(sqrt(px*px+py*py)+0.01);
     } else{
       	rho_dot = (px*vx + py*vy)/sqrt(px*px+py*py);
     }
     
   //map the predicted states x' from Cartesian coordinates to polar coordinates
-  	VectorXd hx_ << rho, phi, rho_dot;
+  	VectorXd hx_ ;
+  	hx_<< rho, phi, rho_dot;
   //EKF update
   	VectorXd y = z - hx_;
     MatrixXd Ht = H_.transpose();
@@ -92,5 +93,5 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   	x_ = x_ + K*y;
     long x_size = x_.size();
   	MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  	P_ = (I - K*H)*P_;
+  	P_ = (I - K*H_)*P_;
 }

@@ -41,6 +41,34 @@ FusionEKF::FusionEKF() {
   H_laser_ << 1,0,0,0,
   			0,1,0,0;
   
+  //initialize x_
+  VectorXd x_ = VectorXd(4);
+  x_ << 1,1,1,1; 
+  
+  //initialize P_
+  MatrixXd P_ = MatrixXd(4,4);
+  P_<< 1,0,0,0,
+  	   0,1,0,0,
+  	   0,0,1,0,
+  	   0,0,0,1;
+  
+  //initialize F_
+  MatrixXd F_ = MatrixXd(4,4);
+  F_<< 1,0,0,0,
+  	   0,1,0,0,
+  	   0,0,1,0,
+  	   0,0,0,1;
+  
+  //initialize Q_
+  MatrixXd Q_ = MatrixXd(4,4);
+  Q_<< 1,0,0,0,
+  	   0,1,0,0,
+  	   0,0,1,0,
+  	   0,0,0,1;
+  
+  
+  //use init function in Kalman_filter.cpp to init martrices and x_
+  ekf_.Init(x_, P_, F_, H_laser_, R_laser_, Q_);
 
 }
 
@@ -60,13 +88,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * You'll need to convert radar from polar to cartesian coordinates.
      */
       // state covariance matrix P
-    ekf_.P_ = MatrixXd(4, 4);
+   // ekf_.P_ = MatrixXd(4, 4);
     ekf_.P_ << 1, 0, 0, 0,
               0, 1, 0, 0,
               0, 0, 1000, 0,
               0, 0, 0, 1000;
     // the initial transition matrix F_
-    ekf_.F_ = MatrixXd(4, 4);
+    //ekf_.F_ = MatrixXd(4, 4);
     ekf_.F_ << 1, 0, 1, 0,
               0, 1, 0, 1,
               0, 0, 1, 0,
@@ -75,8 +103,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // first measurement
     cout << "EKF: " << endl;
-    ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
+    //ekf_.x_ = VectorXd(4);
+    //ekf_.x_ << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
@@ -149,10 +177,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
-	ekf.UpdateEKF(measurement_pack.raw_measurements_);
+    Hj_ = tools.CalculateJacobian(ekf_.x_);
+    ekf_.H_ = Hj_;
+    ekf_.R_ = R_radar_;
+	ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
     // TODO: Laser updates
-	ekf.update(measurement_pack.raw_measurements_);
+    ekf_.H_ = H_laser_;
+    ekf_.R_ = R_laser_;
+	ekf_.Update(measurement_pack.raw_measurements_);
   }
 
   // print the output
