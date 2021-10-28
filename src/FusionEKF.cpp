@@ -109,6 +109,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
       //         and initialize state.
+      cout << "Radar meas init start " << endl;
       	float rho = measurement_pack.raw_measurements_[0];
       	float phi = measurement_pack.raw_measurements_[1];
       	float px = cos(phi)*rho;
@@ -117,14 +118,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       			   py,
       			   0,
       			   0;
-
+	cout << "Radar meas init ends " << endl;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // TODO: Initialize state.
+      cout << "Laser meas init start " << endl;
        ekf_.x_ << measurement_pack.raw_measurements_[0], 
                   measurement_pack.raw_measurements_[1], 
                   0, 
                   0;
+      cout << "Laser meas init ends " << endl;
 
     }
 
@@ -146,6 +149,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
   // compute the time elapsed between the current and previous measurements
   // dt - expressed in seconds
+  cout << "From here second step starts " << endl;
   float dt = (measurement_pack.timestamp_ - previous_timestamp_);
   previous_timestamp_ = measurement_pack.timestamp_;
   float dt_2 = dt*dt;
@@ -157,7 +161,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   // Set the process covariance matrix Q
   float noise_ax = 9;
   float noise_ay = 9;
-  ekf_.Q_ = MatrixXd(4, 4);
+  //ekf_.Q_ = MatrixXd(4, 4);
   ekf_.Q_ << dt_4/4*noise_ax, 0, dt_3/2*noise_ax,0,
             0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
             dt_3/2*noise_ax,0, dt_2*noise_ax,0,
@@ -176,13 +180,19 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+    cout << "Radar update start " << endl;
     // TODO: Radar updates
     Hj_ = tools.CalculateJacobian(ekf_.x_);
+    cout << "Hj_ calc " << endl;
     ekf_.H_ = Hj_;
+    cout << "ekf_.H_ update" << endl;
     ekf_.R_ = R_radar_;
+    cout << "ekf_.R_ update " << endl;
 	ekf_.UpdateEKF(measurement_pack.raw_measurements_);
+    cout << "ekf update " << endl;
   } else {
     // TODO: Laser updates
+    cout << "Laser update start " << endl;
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
 	ekf_.Update(measurement_pack.raw_measurements_);

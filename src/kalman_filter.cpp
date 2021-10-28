@@ -53,18 +53,20 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
    * TODO: update the state by using Extended Kalman Filter equations
    */
+  std::cout << "x_ update starts " << std::endl;
   	float px = x_(0);
   	float py = x_(1);
   	float vx = x_(2);
     float vy = x_(3);
   	
   // pre-compute a set of terms to avoid repeated calculation
-
+std::cout << "x_ conversion starts" << std::endl;
   	float rho = sqrt(px*px+py*py);
     float phi = atan2(py,px);
   	float rho_dot;
   	const float pi = 3.1415926;
   	//normalize phi
+  std::cout << "normalization starts " << std::endl;
   	if (phi>pi){
 		phi -=2*pi;  
   	}else if(phi < -pi){
@@ -73,6 +75,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     	phi = phi;
     }
   	//check if px*px+ py*py is close to 0
+  std::cout << "check divide by 0 " << std::endl;
   	if (px*px+py*py < 0.0001){
     	std::cout<< "px**2 + py**2 is too close to 0, no valid EKF update" << std::endl;
       	rho_dot = (px*vx + py*vy)/(sqrt(px*px+py*py)+0.01);
@@ -81,9 +84,11 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     }
     
   //map the predicted states x' from Cartesian coordinates to polar coordinates
-  	VectorXd hx_ ;
+  std::cout << "hx init " << std::endl;
+  	VectorXd hx_(3) ;
   	hx_<< rho, phi, rho_dot;
   //EKF update
+  std::cout << "EKF update " << std::endl;
   	VectorXd y = z - hx_;
     MatrixXd Ht = H_.transpose();
     MatrixXd S = H_ * P_ * Ht + R_;
