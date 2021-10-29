@@ -37,6 +37,9 @@ FusionEKF::FusionEKF() {
    * TODO: Set the process and measurement noises
    */
   
+  noise_ax = 9;
+  noise_ay = 9;
+  
   //set measurement matrix
   H_laser_ << 1,0,0,0,
   			0,1,0,0;
@@ -66,9 +69,11 @@ FusionEKF::FusionEKF() {
   	   0,0,1,0,
   	   0,0,0,1;
   
-  
+  //initialize x_old_
+  VectorXd x_old_ = VectorXd(4);
+  x_old_ << 0.01,0.01,0.01,0.01; 
   //use init function in Kalman_filter.cpp to init martrices and x_
-  ekf_.Init(x_, P_, F_, H_laser_, R_laser_, Q_);
+  ekf_.Init(x_, P_, F_, H_laser_, R_laser_, Q_, x_old_);
 
 }
 
@@ -159,8 +164,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   ekf_.F_(0,2) = dt;
   ekf_.F_(1,3) = dt;
   // Set the process covariance matrix Q
-  float noise_ax = 9;
-  float noise_ay = 9;
+
   //ekf_.Q_ = MatrixXd(4, 4);
   ekf_.Q_ << dt_4/4*noise_ax, 0, dt_3/2*noise_ax,0,
             0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,

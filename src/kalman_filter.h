@@ -25,7 +25,7 @@ class KalmanFilter {
    * @param Q_in Process covariance matrix
    */
   void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
-            Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_in, Eigen::MatrixXd &Q_in);
+            Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_in, Eigen::MatrixXd &Q_in, Eigen::VectorXd &x_old_in);
 
   /**
    * Prediction Predicts the state and the state covariance
@@ -48,6 +48,9 @@ class KalmanFilter {
 
   // state vector
   Eigen::VectorXd x_;
+  
+  // state vector store old x_ value
+  Eigen::VectorXd x_old_;
 
   // state covariance matrix
   Eigen::MatrixXd P_;

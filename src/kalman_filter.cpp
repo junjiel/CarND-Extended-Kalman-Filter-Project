@@ -13,13 +13,15 @@ KalmanFilter::KalmanFilter() {}
 KalmanFilter::~KalmanFilter() {}
 
 void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
-                        MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in) {
+                        MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in, VectorXd &x_old_in) {
   x_ = x_in;
   P_ = P_in;
   F_ = F_in;
   H_ = H_in;
   R_ = R_in;
   Q_ = Q_in;
+  //add x_old_ to store old x_ info
+  x_old_ = x_old_in;
 }
 
 void KalmanFilter::Predict() {
@@ -47,12 +49,15 @@ void KalmanFilter::Update(const VectorXd &z) {
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
+  //use x_old_ as a replacement of x_ in case px, py are too close to 0 
+  x_old_ = x_;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
    * TODO: update the state by using Extended Kalman Filter equations
    */
+    
   std::cout << "x_ update starts " << std::endl;
   	float px = x_(0);
   	float py = x_(1);
@@ -61,15 +66,15 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   	
   // pre-compute a set of terms to avoid repeated calculation
 std::cout << "x_ conversion starts" << std::endl;
-  if (px == 0 && py == 0){
-  	px = 0.01;
-    py = 0.01;
+
+//check if denominator is close to zero, if it is, replace it with most recent valid value 
+  if ( px*px + py*py <0.0001){
+     px = x_old_(0);
+  	 py = x_old_(1);
+  	 vx = x_old_(2);
+     vy = x_old_(3);
   }
-  float root = px*px + py*py;
-  if ( root <0.0001){
-   root = 0.0001;
-  }
-  	float rho = sqrt(root);
+  	float rho = sqrt(px*px + py*py);
     float phi = atan2(py,px);
   	float rho_dot;
   	const float pi = 3.1415926;
@@ -85,7 +90,7 @@ std::cout << "x_ conversion starts" << std::endl;
   	//check if px*px+ py*py is close to 0
   std::cout << "check divide by 0 " << std::endl;
  
-      	rho_dot = (px*vx + py*vy)/sqrt(root);
+      	rho_dot = (px*vx + py*vy)/sqrt(px*px + py*py);
    
     
   //map the predicted states x' from Cartesian coordinates to polar coordinates
@@ -104,4 +109,6 @@ std::cout << "x_ conversion starts" << std::endl;
     long x_size = x_.size();
   	MatrixXd I = MatrixXd::Identity(x_size, x_size);
   	P_ = (I - K*H_)*P_;
+    //use x_old_ as a replacement of x_ in case px, py are too close to 0 
+    x_old_ = x_;	
 }
