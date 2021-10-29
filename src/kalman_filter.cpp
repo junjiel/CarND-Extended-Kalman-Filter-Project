@@ -1,5 +1,6 @@
 #include "kalman_filter.h"
 #include <iostream>
+#include "math.h"
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -77,16 +78,7 @@ std::cout << "x_ conversion starts" << std::endl;
   	float rho = sqrt(px*px + py*py);
     float phi = atan2(py,px);
   	float rho_dot;
-  	const float pi = 3.1415926;
-  	//normalize phi
-  std::cout << "normalization starts " << std::endl;
-  	if (phi>pi){
-		phi -=2*pi;  
-  	}else if(phi < -pi){
-    	phi+= 2*pi;
-    }else{
-    	phi = phi;
-    }
+
   	//check if px*px+ py*py is close to 0
   std::cout << "check divide by 0 " << std::endl;
  
@@ -99,7 +91,18 @@ std::cout << "x_ conversion starts" << std::endl;
   	hx_<< rho, phi, rho_dot;
   //EKF update
   std::cout << "EKF update " << std::endl;
+  
   	VectorXd y = z - hx_;
+  	//normalize angle phi. phi should always be between -pi and pi
+  std::cout << "normalization starts " << std::endl;
+   while (y(1)>M_PI)
+        {
+            y(1) -= 2 * M_PI;
+        }
+        while (y(1)<-M_PI)
+        {
+            y(1) += 2 * M_PI;
+        }
     MatrixXd Ht = H_.transpose();
     MatrixXd S = H_ * P_ * Ht + R_;
     MatrixXd Si = S.inverse();
