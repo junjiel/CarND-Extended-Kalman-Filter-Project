@@ -49,8 +49,8 @@ FusionEKF::FusionEKF() {
   MatrixXd P_ = MatrixXd(4,4);
   P_<< 1,0,0,0,
   	   0,1,0,0,
-  	   0,0,1,0,
-  	   0,0,0,1;
+  	   0,0,1000,0,
+  	   0,0,0,1000;
   
   //initialize F_
   MatrixXd F_ = MatrixXd(4,4);
@@ -150,8 +150,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   // compute the time elapsed between the current and previous measurements
   // dt - expressed in seconds
   cout << "From here second step starts " << endl;
-  float dt = (measurement_pack.timestamp_ - previous_timestamp_);
-  previous_timestamp_ = measurement_pack.timestamp_;
+  float dt = (measurement_pack.timestamp_ - previous_timestamp_)/ 1000000.0;
+  previous_timestamp_ = measurement_pack.timestamp_ ;
   float dt_2 = dt*dt;
   float dt_3 = dt_2*dt;
   float dt_4 = dt_3*dt;

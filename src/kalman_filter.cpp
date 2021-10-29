@@ -61,7 +61,15 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   	
   // pre-compute a set of terms to avoid repeated calculation
 std::cout << "x_ conversion starts" << std::endl;
-  	float rho = sqrt(px*px+py*py);
+  if (px == 0 && py == 0){
+  	px = 0.01;
+    py = 0.01;
+  }
+  float root = px*px + py*py;
+  if ( root <0.0001){
+   root = 0.0001;
+  }
+  	float rho = sqrt(root);
     float phi = atan2(py,px);
   	float rho_dot;
   	const float pi = 3.1415926;
@@ -76,12 +84,9 @@ std::cout << "x_ conversion starts" << std::endl;
     }
   	//check if px*px+ py*py is close to 0
   std::cout << "check divide by 0 " << std::endl;
-  	if (px*px+py*py < 0.0001){
-    	std::cout<< "px**2 + py**2 is too close to 0, no valid EKF update" << std::endl;
-      	rho_dot = (px*vx + py*vy)/(sqrt(px*px+py*py)+0.01);
-    } else{
-      	rho_dot = (px*vx + py*vy)/sqrt(px*px+py*py);
-    }
+ 
+      	rho_dot = (px*vx + py*vy)/sqrt(root);
+   
     
   //map the predicted states x' from Cartesian coordinates to polar coordinates
   std::cout << "hx init " << std::endl;
